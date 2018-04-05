@@ -11,13 +11,14 @@ library(tidyverse)
 library(survey)
 library(tmap)
 library(rgdal)
+library(sandwich)
+library(lmtest)
 ```
 
-Load data
+Load data from IPUMS (https://usa.ipums.org/usa/) that is already restricted to only Kentucky
 ```{r}
 df <- read_csv("usa_00019.csv")
 ```
-
 
 Read in shapefile
 ```{r}
@@ -29,15 +30,22 @@ Filter to children 5-18 in Kentucky
 df_filtered <- df %>% filter(AGE < 19 & AGE > 4)
 ```
 
-
+Creating new variables that are easier to interpret
 ```{r}
 df_filtered <- df_filtered %>%
   mutate(
     poverty = ifelse(POVERTY < 100, 1, 0),
     no_int_access = ifelse(CINETHH == 3, 1, 0)
   )
-```
 
+df_filtered$race <- "All Others"
+df_filtered$race[df_filtered$RACE == 1] <- "White"
+df_filtered$race[df_filtered$RACE == 2] <- "Black"
+df_filtered$race[df_filtered$HISPAN == 1] <- "Hispanic"
+df_filtered$race[df_filtered$HISPAN == 2] <- "Hispanic"
+df_filtered$race[df_filtered$HISPAN == 3] <- "Hispanic"
+df_filtered$race[df_filtered$HISPAN == 4] <- "Hispanic"
+```
 
 write smaller dataset to .csv format
 ```{r}
@@ -50,15 +58,45 @@ svy_df <- svydesign(ids = ~1, weights = ~PERWT, data = df_filtered)
 ky_int <- svymean(~no_int_access, design = svy_df)
 ky_pov_int <- svyby(~no_int_access, ~poverty, design = svy_df, svymean)
 ky_puma <- svyby(~no_int_access, ~PUMA, design = svy_df, svymean)
+ky_race <- svyby(~no_int_access, ~race, design = svy_df, svymean)
 ```
 
 Print statewide results
 ```{r}
 ky_int
 ky_pov_int
+ky_race
 ```
 
+Linear regression model 
+```{r}
+#variables as factors for regression and setting White to be the race tested against for statistical signifance
+df_filtered$puma_factor <- as.factor(df_filtered$PUMA)
+df_filtered$race <- as.factor(df_filtered$race)
+df_filtered$race <- relevel(df_filtered$race, "White")
+
+#model
+mod1 <- lm(no_int_access ~ POVERTY + race + puma_factor, weights = PERWT, data = df_filtered)
+
+#heteroskedasticity robust standard errors
+mod1$newse <- vcovHC(mod1, type="HC3")
+mod1.display <- coeftest(mod1, mod1$newse)
+
+#cleaning up the output a bit for display
+tidy_output <- broom::tidy(mod1.display)
+tidy_output[,2:5] <- round(tidy_output[,2:5], 3)
+tidy_output <- knitr::kable(tidy_output)
+tidy_output
+```
+
+
 Overall, 8% of children 5-18 in Kentucky don't have internet access at home. 16% of children in poverty don't have interent access, compared to 5% of children not in poverty. Children in poverty are 3x more likely not to have internet access at home. 
+
+Write PUMA data to csv
+```{r}
+write_csv(ky_puma, "ky_puma_int_access.csv")
+```
+
 
 Prepare shapefile and merge in new data
 ```{r}
@@ -72,6 +110,6 @@ Create and save map
 ```{r}
 png("ky_int_map.png", height = 250, width = 550)
 tm_shape(ky_shp) +
-  tm_polygons("no_int_access", style="quantile", title="Children Ages 5-18 Without Home Internet Access \n(Percent)", palette = "Blues")
+  tm_polygons("no_int_access", style="quantile", title="Children Ages 5-18 Without Home Internet Access, 2016 \n(Percent)", palette = "Blues")
 dev.off()
 ```

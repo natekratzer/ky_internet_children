@@ -176,15 +176,23 @@ $(document).ready(function () {
 <p>Load libraries</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KHN1cnZleSlcbmxpYnJhcnkodG1hcClcbmxpYnJhcnkocmdkYWwpXG5gYGAifQ== -->
-<pre class="r"><code>library(tidyverse)
-library(survey)
-library(tmap)
-library(rgdal)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShzYW5kd2ljaClcbmxpYnJhcnkobG10ZXN0KVxuXG5gYGAifQ== -->
+<pre class="r"><code>library(sandwich)
+library(lmtest)
+</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTG9hZGluZyByZXF1aXJlZCBwYWNrYWdlOiB6b29cblxuQXR0YWNoaW5nIHBhY2thZ2U6IOOkvOO4sXpvb+OkvOO4slxuXG5UaGUgZm9sbG93aW5nIG9iamVjdHMgYXJlIG1hc2tlZCBmcm9tIOOkvOO4sXBhY2thZ2U6YmFzZeOkvOO4sjpcblxuICAgIGFzLkRhdGUsIGFzLkRhdGUubnVtZXJpY1xuIn0= -->
+<pre><code>Loading required package: zoo
+
+Attaching package: &lt;U+393C&gt;&lt;U+3E31&gt;zoo&lt;U+393C&gt;&lt;U+3E32&gt;
+
+The following objects are masked from &lt;U+393C&gt;&lt;U+3E31&gt;package:base&lt;U+393C&gt;&lt;U+3E32&gt;:
+
+    as.Date, as.Date.numeric</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Load data</p>
+<p>Load data from IPUMS (<a href="https://usa.ipums.org/usa/" class="uri">https://usa.ipums.org/usa/</a>) that is already restricted to only Kentucky</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gcmVhZF9jc3YoXCJ1c2FfMDAwMTkuY3N2XCIpXG5gYGAifQ== -->
@@ -237,6 +245,7 @@ Integer64 fields read as doubles:  ALAND10 AWATER10 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Creating new variables that are easier to interpret</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGZfZmlsdGVyZWQgPC0gZGZfZmlsdGVyZWQgJT4lXG4gIG11dGF0ZShcbiAgICBwb3ZlcnR5ID0gaWZlbHNlKFBPVkVSVFkgPCAxMDAsIDEsIDApLFxuICAgIG5vX2ludF9hY2Nlc3MgPSBpZmVsc2UoQ0lORVRISCA9PSAzLCAxLCAwKVxuICApXG5gYGAifQ== -->
@@ -245,6 +254,18 @@ Integer64 fields read as doubles:  ALAND10 AWATER10 </code></pre>
     poverty = ifelse(POVERTY &lt; 100, 1, 0),
     no_int_access = ifelse(CINETHH == 3, 1, 0)
   )</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiVGhlcmUgd2VyZSAzNiB3YXJuaW5ncyAodXNlIHdhcm5pbmdzKCkgdG8gc2VlIHRoZW0pXG4ifQ== -->
+<pre><code>There were 36 warnings (use warnings() to see them)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGZfZmlsdGVyZWQkcmFjZSA8LSBcIkFsbCBPdGhlcnNcIlxuZGZfZmlsdGVyZWQkcmFjZVtkZl9maWx0ZXJlZCRSQUNFID09IDFdIDwtIFwiV2hpdGVcIlxuZGZfZmlsdGVyZWQkcmFjZVtkZl9maWx0ZXJlZCRSQUNFID09IDJdIDwtIFwiQmxhY2tcIlxuZGZfZmlsdGVyZWQkcmFjZVtkZl9maWx0ZXJlZCRISVNQQU4gPT0gMV0gPC0gXCJIaXNwYW5pY1wiXG5kZl9maWx0ZXJlZCRyYWNlW2RmX2ZpbHRlcmVkJEhJU1BBTiA9PSAyXSA8LSBcIkhpc3BhbmljXCJcbmRmX2ZpbHRlcmVkJHJhY2VbZGZfZmlsdGVyZWQkSElTUEFOID09IDNdIDwtIFwiSGlzcGFuaWNcIlxuZGZfZmlsdGVyZWQkcmFjZVtkZl9maWx0ZXJlZCRISVNQQU4gPT0gNF0gPC0gXCJIaXNwYW5pY1wiXG5gYGAifQ== -->
+<pre class="r"><code>df_filtered$race &lt;- &quot;All Others&quot;
+df_filtered$race[df_filtered$RACE == 1] &lt;- &quot;White&quot;
+df_filtered$race[df_filtered$RACE == 2] &lt;- &quot;Black&quot;
+df_filtered$race[df_filtered$HISPAN == 1] &lt;- &quot;Hispanic&quot;
+df_filtered$race[df_filtered$HISPAN == 2] &lt;- &quot;Hispanic&quot;
+df_filtered$race[df_filtered$HISPAN == 3] &lt;- &quot;Hispanic&quot;
+df_filtered$race[df_filtered$HISPAN == 4] &lt;- &quot;Hispanic&quot;</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -259,11 +280,12 @@ Integer64 fields read as doubles:  ALAND10 AWATER10 </code></pre>
 <p>Survey analysis</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3Z5X2RmIDwtIHN2eWRlc2lnbihpZHMgPSB+MSwgd2VpZ2h0cyA9IH5QRVJXVCwgZGF0YSA9IGRmX2ZpbHRlcmVkKVxua3lfaW50IDwtIHN2eW1lYW4ofm5vX2ludF9hY2Nlc3MsIGRlc2lnbiA9IHN2eV9kZilcbmt5X3Bvdl9pbnQgPC0gc3Z5Ynkofm5vX2ludF9hY2Nlc3MsIH5wb3ZlcnR5LCBkZXNpZ24gPSBzdnlfZGYsIHN2eW1lYW4pXG5reV9wdW1hIDwtIHN2eWJ5KH5ub19pbnRfYWNjZXNzLCB+UFVNQSwgZGVzaWduID0gc3Z5X2RmLCBzdnltZWFuKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3Z5X2RmIDwtIHN2eWRlc2lnbihpZHMgPSB+MSwgd2VpZ2h0cyA9IH5QRVJXVCwgZGF0YSA9IGRmX2ZpbHRlcmVkKVxua3lfaW50IDwtIHN2eW1lYW4ofm5vX2ludF9hY2Nlc3MsIGRlc2lnbiA9IHN2eV9kZilcbmt5X3Bvdl9pbnQgPC0gc3Z5Ynkofm5vX2ludF9hY2Nlc3MsIH5wb3ZlcnR5LCBkZXNpZ24gPSBzdnlfZGYsIHN2eW1lYW4pXG5reV9wdW1hIDwtIHN2eWJ5KH5ub19pbnRfYWNjZXNzLCB+UFVNQSwgZGVzaWduID0gc3Z5X2RmLCBzdnltZWFuKVxua3lfcmFjZSA8LSBzdnlieSh+bm9faW50X2FjY2VzcywgfnJhY2UsIGRlc2lnbiA9IHN2eV9kZiwgc3Z5bWVhbilcbmBgYCJ9 -->
 <pre class="r"><code>svy_df &lt;- svydesign(ids = ~1, weights = ~PERWT, data = df_filtered)
 ky_int &lt;- svymean(~no_int_access, design = svy_df)
 ky_pov_int &lt;- svyby(~no_int_access, ~poverty, design = svy_df, svymean)
-ky_puma &lt;- svyby(~no_int_access, ~PUMA, design = svy_df, svymean)</code></pre>
+ky_puma &lt;- svyby(~no_int_access, ~PUMA, design = svy_df, svymean)
+ky_race &lt;- svyby(~no_int_access, ~race, design = svy_df, svymean)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -280,42 +302,348 @@ no_int_access 0.081889 0.0045</code></pre>
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxua3lfcG92X2ludFxuYGBgIn0= -->
 <pre class="r"><code>ky_pov_int</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInN2eWJ5IiwiZGF0YS5mcmFtZSJdLCJuY29sIjozLCJucm93IjoyfSwicmRmIjoiSDRzSUFBQUFBQUFBQm5WU1BVN0RNQlIyL2hvMVFJdkVPUm9LQzJPWFRveE1GVUlxYnVLV0NOY3BzVnZvd3NnUkVBTW40QlFNREV6TURBeHdBMDdROHB6WXJYRWhVdVQzdnZmM3ZaK1RidTh3NmtVSUlSZDV2b3RjRDBSNEVYS1FqK3J5dlVISTJ3TkJXaHFsby9vNjMxcXE4TTdUMXR1MmYzYmFlZms2Zm4yZzJRcS8rdWp1dHg4L08zZlA5KzNtKzdsVklHQjRURGdJdTJXUkNnd24rWXdVWXE3VUhaYjNNeWI2T0VrSTV3cDBPYkZUOGRsOE1BZUw1QnZLdU5KWS9aS0xZM0EyYlpGNmthS2hFNGFRY0V3d3MyQ0x6bS9qaXBhN1ZKWlFaeHZqWXBReHpiL0d1TUJDYS80TUYxb09VakljYXFVdXZUSXVza1FENEpuaEFTWGFJd1JBekNkUUZpMnNpZmdKcGxUV010bVhVNHFoQnA1U29UWnFPamkzQ3Z5MzM4VTZxcmEwbkZlcjIyUlRTd25QUnN4RWdFcy9IZG9wMW1PM1U5U0wvRG8yTDhiVnBOdGFPTEN2SXFGNFkwdFJpZ1dPaHdWaytxTkttRTlFbHNPbXFsTUtyR0Nuc0lEbWxFbE9hU3U1bUxMTDFwRnhVbzV4YXE0aGU5YVJCSG9paE1HTkVNMmQ0Z0doU21sQTcyWHI4YVNBZGVoT0FPV3h5QVhXZmxHU1U0MVV1MXI4QUU2RWZIVG9Bd0FBIn0= -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInN2eWJ5IiwiZGF0YS5mcmFtZSJdLCJuY29sIjozLCJucm93IjoyfSwicmRmIjoiSDRzSUFBQUFBQUFBQm5WU1BVN0RNQlIyL2hvMVFJdkVPUm9LWXUvU2laR3BRa2pGVGR3UzRUb2xkZ3RkR0RrQ1l1QUVuSUtCZ1ltWmdRRnV3QWxhbmhPN05TNUVpdnplOS82KzkzUFM3UjFHdlFnaDVDTFBkNUhyZ1FndlFnN3lVVjIrTndoNWV5QklTNk4wVkYvblcwc1Yzbm5hZXR2MnowNDdMMS9Icnc4MFcrRlhIOTM5OXVObjUrNzV2dDE4UDdjS0JBeVBDUWRodHl4U2dlRWtuNUZDekpXNncvSit4a1FmSnduaFhJRXVKM1lxUHBzUDVtQ1JmRU1aVnhxclgzSnhETTZtTFZJdlVqUjB3aEFTamdsbUZtelIrVzFjMFhLWHloTHFiR05jakRLbStkY1lGMWhvelovaFFzdEJTb1pEcmRTbFY4WkZsbWdBUERNOG9FUjdoQUNJK1FUS29vVTFFVC9CbE1wYUp2dHlTakhVd0ZNcTFFWk5CK2RXZ2YvMnUxaEgxWmFXODJwMW0yeHFLZUhaaUprSWNPbW5RenZGZXV4MmlucVJYOGZteGJpYWRGc0xCL1pWSkJSdmJDbEtzY0R4c0lCTWYxUUo4NG5JY3RoVWRVcUJGZXdVRnRDY01za3BiU1VYVTNiWk9qSk95akZPelRWa3p6cVNRRStFTUxnUm9ybFRQQ0JVS1Ezb3ZXdzluaFN3RHQwSm9Ed1d1Y0RhTDBweXFwRnFWNHNmS09LZTBlZ0RBQUE9In0= -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["poverty"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["no_int_access"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"0.05087131","3":"0.004360453","_rn_":"0"},{"1":"1","2":"0.16312537","3":"0.011109517","_rn_":"1"}],"options":{"columns":{"min":{},"max":[10],"total":[3]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
   </script>
 </div>
 <!-- rnb-frame-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxua3lfcmFjZVxuYGBgIn0= -->
+<pre class="r"><code>ky_race</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInN2eWJ5IiwiZGF0YS5mcmFtZSJdLCJuY29sIjozLCJucm93Ijo0fSwicmRmIjoiSDRzSUFBQUFBQUFBQnFWVFBXd1RNUlQyL2VYSVNaUktUQ3dJRm9aS1BTSEUxdUVFWW1CRFlrbUhTdUhGNXpSV0hWOWtPeTJSS3RTcEM2eW9RMmRHSmthRUNreXdNVEJSd2RxVkJjWUxkbUtuRnhjbUlrVisvcjduNTgvdmZmZjR3ZWFkYkRORENJVW9pa01VUmpyVUswSUJpbEhickU4UmlxN3F3RENyaHJWRWRvK3hHNC9VZ0FocGtlUStBN3hqTjVjZVVqa0NUckVqT3dPcWlBNVdUSTNpYVBYbzk4YXIyOFhKNXg5cjN6NjlLejZlSFY3L2V0QXAzdXlkOWI3WDlTTHZ1WHA3N2VicGwrTGwycTFmeHh2VDRsaThmdkZrcTFNSS92NzB3NzcweENZY2hrUmFvWkVGWXdHWTJQZ3lyN3FVcXk1Z1RLVFRIVXJpMTVHN2s5NUVNK2JocVRrM0krZC9JeXdvZmlMM2EzS1pYWkhWNEFxbXV1Q1FBUGRnVDg0eXVaQVZUaTJUdW1wREVOdVVPLzB0TGhVb3Q0dDM0WHdpSmVuMzNhWnRzcWhVaTVHMGRTYUZIaU11STlXQW1vek1sR3F2SXpFR3hzeGRUZld6THVYNkRoZ3pOZlBRY2tMd3pJTC9mRzk5ZnFvMTlaTG5jN3NvcFZVU1NiZDVFOUZDdW1YZk85L291VitpTGFxOXZPbVYvelQxc25rd2d3dkR6RXBRa1BlRnZ2TXZldEpxcEdpbEJ6cDNYT0lkRG9RSFhCbHpvNzVjeDRNeDMxbS8yM0JlMEhCazNJZ2p6MHVKNngzaDJrcnUrMGdZOUFpem14WGRwVm1UOHBIUVUzTXYwYWpNVmFYQTVXVzRZZzZaajdUK0E0Z1VhbTlZQkFBQSJ9 -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["race"],"name":[1],"type":["chr"],"align":["left"]},{"label":["no_int_access"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["se"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"All Others","2":"0.02252424","3":"0.013406240","_rn_":"All Others"},{"1":"Black","2":"0.12417401","3":"0.020668610","_rn_":"Black"},{"1":"Hispanic","2":"0.14769055","3":"0.026804649","_rn_":"Hispanic"},{"1":"White","2":"0.07604834","3":"0.004500154","_rn_":"White"}],"options":{"columns":{"min":{},"max":[10],"total":[3]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Linear regression model</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+
+<!-- rnb-html-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImtuaXRfYXNpcyJdLCJzaXppbmdQb2xpY3kiOltdfX0= -->
+
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.115</td>
+<td align="right">0.020</td>
+<td align="right">5.796</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">POVERTY</td>
+<td align="right">0.000</td>
+<td align="right">0.000</td>
+<td align="right">-9.650</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">raceAll Others</td>
+<td align="right">-0.033</td>
+<td align="right">0.016</td>
+<td align="right">-2.070</td>
+<td align="right">0.038</td>
+</tr>
+<tr class="even">
+<td align="left">raceBlack</td>
+<td align="right">0.055</td>
+<td align="right">0.023</td>
+<td align="right">2.343</td>
+<td align="right">0.019</td>
+</tr>
+<tr class="odd">
+<td align="left">raceHispanic</td>
+<td align="right">0.063</td>
+<td align="right">0.025</td>
+<td align="right">2.472</td>
+<td align="right">0.013</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor200</td>
+<td align="right">0.143</td>
+<td align="right">0.056</td>
+<td align="right">2.572</td>
+<td align="right">0.010</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor300</td>
+<td align="right">0.206</td>
+<td align="right">0.043</td>
+<td align="right">4.746</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor400</td>
+<td align="right">0.052</td>
+<td align="right">0.032</td>
+<td align="right">1.629</td>
+<td align="right">0.103</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor500</td>
+<td align="right">-0.060</td>
+<td align="right">0.020</td>
+<td align="right">-2.989</td>
+<td align="right">0.003</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor600</td>
+<td align="right">0.098</td>
+<td align="right">0.050</td>
+<td align="right">1.949</td>
+<td align="right">0.051</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor700</td>
+<td align="right">0.188</td>
+<td align="right">0.055</td>
+<td align="right">3.441</td>
+<td align="right">0.001</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor800</td>
+<td align="right">0.031</td>
+<td align="right">0.031</td>
+<td align="right">1.003</td>
+<td align="right">0.316</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor900</td>
+<td align="right">0.137</td>
+<td align="right">0.044</td>
+<td align="right">3.133</td>
+<td align="right">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1000</td>
+<td align="right">0.059</td>
+<td align="right">0.034</td>
+<td align="right">1.739</td>
+<td align="right">0.082</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1100</td>
+<td align="right">0.006</td>
+<td align="right">0.026</td>
+<td align="right">0.220</td>
+<td align="right">0.826</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1200</td>
+<td align="right">-0.006</td>
+<td align="right">0.026</td>
+<td align="right">-0.214</td>
+<td align="right">0.831</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1300</td>
+<td align="right">0.021</td>
+<td align="right">0.030</td>
+<td align="right">0.695</td>
+<td align="right">0.487</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1400</td>
+<td align="right">0.120</td>
+<td align="right">0.041</td>
+<td align="right">2.919</td>
+<td align="right">0.004</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1500</td>
+<td align="right">0.002</td>
+<td align="right">0.026</td>
+<td align="right">0.060</td>
+<td align="right">0.952</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1600</td>
+<td align="right">0.000</td>
+<td align="right">0.026</td>
+<td align="right">0.001</td>
+<td align="right">0.999</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1701</td>
+<td align="right">-0.069</td>
+<td align="right">0.031</td>
+<td align="right">-2.223</td>
+<td align="right">0.026</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1702</td>
+<td align="right">-0.009</td>
+<td align="right">0.028</td>
+<td align="right">-0.320</td>
+<td align="right">0.749</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1703</td>
+<td align="right">-0.017</td>
+<td align="right">0.020</td>
+<td align="right">-0.863</td>
+<td align="right">0.388</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1704</td>
+<td align="right">-0.013</td>
+<td align="right">0.021</td>
+<td align="right">-0.590</td>
+<td align="right">0.556</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1705</td>
+<td align="right">-0.065</td>
+<td align="right">0.020</td>
+<td align="right">-3.231</td>
+<td align="right">0.001</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1706</td>
+<td align="right">-0.051</td>
+<td align="right">0.023</td>
+<td align="right">-2.217</td>
+<td align="right">0.027</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1800</td>
+<td align="right">0.033</td>
+<td align="right">0.035</td>
+<td align="right">0.924</td>
+<td align="right">0.355</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor1901</td>
+<td align="right">-0.039</td>
+<td align="right">0.027</td>
+<td align="right">-1.463</td>
+<td align="right">0.144</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor1902</td>
+<td align="right">-0.051</td>
+<td align="right">0.019</td>
+<td align="right">-2.672</td>
+<td align="right">0.008</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor2000</td>
+<td align="right">-0.035</td>
+<td align="right">0.022</td>
+<td align="right">-1.600</td>
+<td align="right">0.110</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor2100</td>
+<td align="right">0.026</td>
+<td align="right">0.037</td>
+<td align="right">0.698</td>
+<td align="right">0.485</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor2200</td>
+<td align="right">0.066</td>
+<td align="right">0.034</td>
+<td align="right">1.941</td>
+<td align="right">0.052</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor2300</td>
+<td align="right">-0.007</td>
+<td align="right">0.024</td>
+<td align="right">-0.297</td>
+<td align="right">0.767</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor2400</td>
+<td align="right">-0.016</td>
+<td align="right">0.023</td>
+<td align="right">-0.688</td>
+<td align="right">0.492</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor2500</td>
+<td align="right">-0.014</td>
+<td align="right">0.025</td>
+<td align="right">-0.536</td>
+<td align="right">0.592</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor2600</td>
+<td align="right">0.019</td>
+<td align="right">0.025</td>
+<td align="right">0.775</td>
+<td align="right">0.438</td>
+</tr>
+<tr class="odd">
+<td align="left">puma_factor2700</td>
+<td align="right">0.030</td>
+<td align="right">0.027</td>
+<td align="right">1.095</td>
+<td align="right">0.274</td>
+</tr>
+<tr class="even">
+<td align="left">puma_factor2800</td>
+<td align="right">0.055</td>
+<td align="right">0.036</td>
+<td align="right">1.554</td>
+<td align="right">0.120</td>
+</tr>
+</tbody>
+</table>
+
+
+<!-- rnb-html-end -->
+
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Overall, 8% of children 5-18 in Kentucky don’t have internet access at home. 16% of children in poverty don’t have interent access, compared to 5% of children not in poverty. Children in poverty are 3x more likely not to have internet access at home.</p>
+<p>Write PUMA data to csv</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxud3JpdGVfY3N2KGt5X3B1bWEsIFwia3lfcHVtYV9pbnRfYWNjZXNzLmNzdlwiKVxuYGBgIn0= -->
+<pre class="r"><code>write_csv(ky_puma, &quot;ky_puma_int_access.csv&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <p>Prepare shapefile and merge in new data</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxua3lfc2hwQGRhdGEkUFVNQSA8LSBhcy5udW1lcmljKGFzLmNoYXJhY3RlcihreV9zaHBAZGF0YSRQVU1BQ0UxMCkpXG5reV9zaHBAZGF0YSA8LSBmdWxsX2pvaW4oa3lfc2hwQGRhdGEsIGt5X3B1bWEsIGJ5ID0gXCJQVU1BXCIpXG5reV9zaHBAZGF0YSRub19pbnRfYWNjZXNzIDwtIGt5X3NocEBkYXRhJG5vX2ludF9hY2Nlc3MgKiAxMDBcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxua3lfc2hwQGRhdGEkUFVNQSA8LSBhcy5udW1lcmljKGFzLmNoYXJhY3RlcihreV9zaHBAZGF0YSRQVU1BQ0UxMCkpXG5reV9zaHBAZGF0YSA8LSBmdWxsX2pvaW4oa3lfc2hwQGRhdGEsIGt5X3B1bWEsIGJ5ID0gXCJQVU1BXCIpXG5reV9zaHBAZGF0YSRub19pbnRfYWNjZXNzIDwtIGt5X3NocEBkYXRhJG5vX2ludF9hY2Nlc3MgKiAxMDBcblxuYGBgIn0= -->
 <pre class="r"><code>ky_shp@data$PUMA &lt;- as.numeric(as.character(ky_shp@data$PUMACE10))
 ky_shp@data &lt;- full_join(ky_shp@data, ky_puma, by = &quot;PUMA&quot;)
-ky_shp@data$no_int_access &lt;- ky_shp@data$no_int_access * 100</code></pre>
+ky_shp@data$no_int_access &lt;- ky_shp@data$no_int_access * 100
+</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Create and save map</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucG5nKFwia3lfaW50X21hcC5wbmdcIiwgaGVpZ2h0ID0gMjUwLCB3aWR0aCA9IDU1MClcbnRtX3NoYXBlKGt5X3NocCkgK1xuICB0bV9wb2x5Z29ucyhcIm5vX2ludF9hY2Nlc3NcIiwgc3R5bGU9XCJxdWFudGlsZVwiLCB0aXRsZT1cIkNoaWxkcmVuIEFnZXMgNS0xOCBXaXRob3V0IEhvbWUgSW50ZXJuZXQgQWNjZXNzIFxcbihQZXJjZW50KVwiLCBwYWxldHRlID0gXCJCbHVlc1wiKVxuZGV2Lm9mZigpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucG5nKFwia3lfaW50X21hcC5wbmdcIiwgaGVpZ2h0ID0gMjUwLCB3aWR0aCA9IDU1MClcbnRtX3NoYXBlKGt5X3NocCkgK1xuICB0bV9wb2x5Z29ucyhcIm5vX2ludF9hY2Nlc3NcIiwgc3R5bGU9XCJxdWFudGlsZVwiLCB0aXRsZT1cIkNoaWxkcmVuIEFnZXMgNS0xOCBXaXRob3V0IEhvbWUgSW50ZXJuZXQgQWNjZXNzLCAyMDE2IFxcbihQZXJjZW50KVwiLCBwYWxldHRlID0gXCJCbHVlc1wiKVxuZGV2Lm9mZigpXG5gYGAifQ== -->
 <pre class="r"><code>png(&quot;ky_int_map.png&quot;, height = 250, width = 550)
 tm_shape(ky_shp) +
-  tm_polygons(&quot;no_int_access&quot;, style=&quot;quantile&quot;, title=&quot;Children Ages 5-18 Without Home Internet Access \n(Percent)&quot;, palette = &quot;Blues&quot;)
+  tm_polygons(&quot;no_int_access&quot;, style=&quot;quantile&quot;, title=&quot;Children Ages 5-18 Without Home Internet Access, 2016 \n(Percent)&quot;, palette = &quot;Blues&quot;)
 dev.off()</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoibnVsbCBkZXZpY2UgXG4gICAgICAgICAgMSBcbiJ9 -->
-<pre><code>null device 
-          1 </code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpEYXRhIGlzIGZyb20gSVBVTVMgYW5kIHdhcyBkb3dubG9hZGVkIGFzIC5jc3YgYW5kIHNhdmVkIGluIHRoaXMgcmVwbw0KDQpMb2FkIGxpYnJhcmllcw0KYGBge3J9DQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoc3VydmV5KQ0KbGlicmFyeSh0bWFwKQ0KbGlicmFyeShyZ2RhbCkNCmBgYA0KDQpMb2FkIGRhdGENCmBgYHtyfQ0KZGYgPC0gcmVhZF9jc3YoInVzYV8wMDAxOS5jc3YiKQ0KYGBgDQoNCg0KUmVhZCBpbiBzaGFwZWZpbGUNCmBgYHtyfQ0Ka3lfc2hwIDwtIHJlYWRPR1IoImNiXzIwMTZfMjFfcHVtYTEwXzUwMGsiLCBsYXllciA9ICJjYl8yMDE2XzIxX3B1bWExMF81MDBrIiwgR0RBTDFfaW50ZWdlcjY0X3BvbGljeSA9IFRSVUUpIA0KYGBgDQoNCkZpbHRlciB0byBjaGlsZHJlbiA1LTE4IGluIEtlbnR1Y2t5DQpgYGB7cn0NCmRmX2ZpbHRlcmVkIDwtIGRmICU+JSBmaWx0ZXIoQUdFIDwgMTkgJiBBR0UgPiA0KQ0KYGBgDQoNCg0KYGBge3J9DQpkZl9maWx0ZXJlZCA8LSBkZl9maWx0ZXJlZCAlPiUNCiAgbXV0YXRlKA0KICAgIHBvdmVydHkgPSBpZmVsc2UoUE9WRVJUWSA8IDEwMCwgMSwgMCksDQogICAgbm9faW50X2FjY2VzcyA9IGlmZWxzZShDSU5FVEhIID09IDMsIDEsIDApDQogICkNCmBgYA0KDQoNCndyaXRlIHNtYWxsZXIgZGF0YXNldCB0byAuY3N2IGZvcm1hdA0KYGBge3J9DQp3cml0ZV9jc3YoZGZfZmlsdGVyZWQsICJreV9jaGlsZHJlbl9vbmx5LmNzdiIpDQpgYGANCg0KU3VydmV5IGFuYWx5c2lzDQpgYGB7cn0NCnN2eV9kZiA8LSBzdnlkZXNpZ24oaWRzID0gfjEsIHdlaWdodHMgPSB+UEVSV1QsIGRhdGEgPSBkZl9maWx0ZXJlZCkNCmt5X2ludCA8LSBzdnltZWFuKH5ub19pbnRfYWNjZXNzLCBkZXNpZ24gPSBzdnlfZGYpDQpreV9wb3ZfaW50IDwtIHN2eWJ5KH5ub19pbnRfYWNjZXNzLCB+cG92ZXJ0eSwgZGVzaWduID0gc3Z5X2RmLCBzdnltZWFuKQ0Ka3lfcHVtYSA8LSBzdnlieSh+bm9faW50X2FjY2VzcywgflBVTUEsIGRlc2lnbiA9IHN2eV9kZiwgc3Z5bWVhbikNCmBgYA0KDQpQcmludCBzdGF0ZXdpZGUgcmVzdWx0cw0KYGBge3J9DQpreV9pbnQNCmt5X3Bvdl9pbnQNCmBgYA0KDQpPdmVyYWxsLCA4JSBvZiBjaGlsZHJlbiA1LTE4IGluIEtlbnR1Y2t5IGRvbid0IGhhdmUgaW50ZXJuZXQgYWNjZXNzIGF0IGhvbWUuIDE2JSBvZiBjaGlsZHJlbiBpbiBwb3ZlcnR5IGRvbid0IGhhdmUgaW50ZXJlbnQgYWNjZXNzLCBjb21wYXJlZCB0byA1JSBvZiBjaGlsZHJlbiBub3QgaW4gcG92ZXJ0eS4gQ2hpbGRyZW4gaW4gcG92ZXJ0eSBhcmUgM3ggbW9yZSBsaWtlbHkgbm90IHRvIGhhdmUgaW50ZXJuZXQgYWNjZXNzIGF0IGhvbWUuIA0KDQpQcmVwYXJlIHNoYXBlZmlsZSBhbmQgbWVyZ2UgaW4gbmV3IGRhdGENCmBgYHtyfQ0Ka3lfc2hwQGRhdGEkUFVNQSA8LSBhcy5udW1lcmljKGFzLmNoYXJhY3RlcihreV9zaHBAZGF0YSRQVU1BQ0UxMCkpDQpreV9zaHBAZGF0YSA8LSBmdWxsX2pvaW4oa3lfc2hwQGRhdGEsIGt5X3B1bWEsIGJ5ID0gIlBVTUEiKQ0Ka3lfc2hwQGRhdGEkbm9faW50X2FjY2VzcyA8LSBreV9zaHBAZGF0YSRub19pbnRfYWNjZXNzICogMTAwDQoNCmBgYA0KDQpDcmVhdGUgYW5kIHNhdmUgbWFwDQpgYGB7cn0NCnBuZygia3lfaW50X21hcC5wbmciLCBoZWlnaHQgPSAyNTAsIHdpZHRoID0gNTUwKQ0KdG1fc2hhcGUoa3lfc2hwKSArDQogIHRtX3BvbHlnb25zKCJub19pbnRfYWNjZXNzIiwgc3R5bGU9InF1YW50aWxlIiwgdGl0bGU9IkNoaWxkcmVuIEFnZXMgNS0xOCBXaXRob3V0IEhvbWUgSW50ZXJuZXQgQWNjZXNzIFxuKFBlcmNlbnQpIiwgcGFsZXR0ZSA9ICJCbHVlcyIpDQpkZXYub2ZmKCkNCmBgYA==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpEYXRhIGlzIGZyb20gSVBVTVMgYW5kIHdhcyBkb3dubG9hZGVkIGFzIC5jc3YgYW5kIHNhdmVkIGluIHRoaXMgcmVwbw0KDQpMb2FkIGxpYnJhcmllcw0KYGBge3J9DQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoc3VydmV5KQ0KbGlicmFyeSh0bWFwKQ0KbGlicmFyeShyZ2RhbCkNCmxpYnJhcnkoc2FuZHdpY2gpDQpsaWJyYXJ5KGxtdGVzdCkNCmBgYA0KDQpMb2FkIGRhdGEgZnJvbSBJUFVNUyAoaHR0cHM6Ly91c2EuaXB1bXMub3JnL3VzYS8pIHRoYXQgaXMgYWxyZWFkeSByZXN0cmljdGVkIHRvIG9ubHkgS2VudHVja3kNCmBgYHtyfQ0KZGYgPC0gcmVhZF9jc3YoInVzYV8wMDAxOS5jc3YiKQ0KYGBgDQoNClJlYWQgaW4gc2hhcGVmaWxlDQpgYGB7cn0NCmt5X3NocCA8LSByZWFkT0dSKCJjYl8yMDE2XzIxX3B1bWExMF81MDBrIiwgbGF5ZXIgPSAiY2JfMjAxNl8yMV9wdW1hMTBfNTAwayIsIEdEQUwxX2ludGVnZXI2NF9wb2xpY3kgPSBUUlVFKSANCmBgYA0KDQpGaWx0ZXIgdG8gY2hpbGRyZW4gNS0xOCBpbiBLZW50dWNreQ0KYGBge3J9DQpkZl9maWx0ZXJlZCA8LSBkZiAlPiUgZmlsdGVyKEFHRSA8IDE5ICYgQUdFID4gNCkNCmBgYA0KDQpDcmVhdGluZyBuZXcgdmFyaWFibGVzIHRoYXQgYXJlIGVhc2llciB0byBpbnRlcnByZXQNCmBgYHtyfQ0KZGZfZmlsdGVyZWQgPC0gZGZfZmlsdGVyZWQgJT4lDQogIG11dGF0ZSgNCiAgICBwb3ZlcnR5ID0gaWZlbHNlKFBPVkVSVFkgPCAxMDAsIDEsIDApLA0KICAgIG5vX2ludF9hY2Nlc3MgPSBpZmVsc2UoQ0lORVRISCA9PSAzLCAxLCAwKQ0KICApDQoNCmRmX2ZpbHRlcmVkJHJhY2UgPC0gIkFsbCBPdGhlcnMiDQpkZl9maWx0ZXJlZCRyYWNlW2RmX2ZpbHRlcmVkJFJBQ0UgPT0gMV0gPC0gIldoaXRlIg0KZGZfZmlsdGVyZWQkcmFjZVtkZl9maWx0ZXJlZCRSQUNFID09IDJdIDwtICJCbGFjayINCmRmX2ZpbHRlcmVkJHJhY2VbZGZfZmlsdGVyZWQkSElTUEFOID09IDFdIDwtICJIaXNwYW5pYyINCmRmX2ZpbHRlcmVkJHJhY2VbZGZfZmlsdGVyZWQkSElTUEFOID09IDJdIDwtICJIaXNwYW5pYyINCmRmX2ZpbHRlcmVkJHJhY2VbZGZfZmlsdGVyZWQkSElTUEFOID09IDNdIDwtICJIaXNwYW5pYyINCmRmX2ZpbHRlcmVkJHJhY2VbZGZfZmlsdGVyZWQkSElTUEFOID09IDRdIDwtICJIaXNwYW5pYyINCmBgYA0KDQp3cml0ZSBzbWFsbGVyIGRhdGFzZXQgdG8gLmNzdiBmb3JtYXQNCmBgYHtyfQ0Kd3JpdGVfY3N2KGRmX2ZpbHRlcmVkLCAia3lfY2hpbGRyZW5fb25seS5jc3YiKQ0KYGBgDQoNClN1cnZleSBhbmFseXNpcw0KYGBge3J9DQpzdnlfZGYgPC0gc3Z5ZGVzaWduKGlkcyA9IH4xLCB3ZWlnaHRzID0gflBFUldULCBkYXRhID0gZGZfZmlsdGVyZWQpDQpreV9pbnQgPC0gc3Z5bWVhbih+bm9faW50X2FjY2VzcywgZGVzaWduID0gc3Z5X2RmKQ0Ka3lfcG92X2ludCA8LSBzdnlieSh+bm9faW50X2FjY2VzcywgfnBvdmVydHksIGRlc2lnbiA9IHN2eV9kZiwgc3Z5bWVhbikNCmt5X3B1bWEgPC0gc3Z5Ynkofm5vX2ludF9hY2Nlc3MsIH5QVU1BLCBkZXNpZ24gPSBzdnlfZGYsIHN2eW1lYW4pDQpreV9yYWNlIDwtIHN2eWJ5KH5ub19pbnRfYWNjZXNzLCB+cmFjZSwgZGVzaWduID0gc3Z5X2RmLCBzdnltZWFuKQ0KYGBgDQoNClByaW50IHN0YXRld2lkZSByZXN1bHRzDQpgYGB7cn0NCmt5X2ludA0Ka3lfcG92X2ludA0Ka3lfcmFjZQ0KYGBgDQoNCkxpbmVhciByZWdyZXNzaW9uIG1vZGVsIA0KYGBge3J9DQojdmFyaWFibGVzIGFzIGZhY3RvcnMgZm9yIHJlZ3Jlc3Npb24gYW5kIHNldHRpbmcgV2hpdGUgdG8gYmUgdGhlIHJhY2UgdGVzdGVkIGFnYWluc3QgZm9yIHN0YXRpc3RpY2FsIHNpZ25pZmFuY2UNCmRmX2ZpbHRlcmVkJHB1bWFfZmFjdG9yIDwtIGFzLmZhY3RvcihkZl9maWx0ZXJlZCRQVU1BKQ0KZGZfZmlsdGVyZWQkcmFjZSA8LSBhcy5mYWN0b3IoZGZfZmlsdGVyZWQkcmFjZSkNCmRmX2ZpbHRlcmVkJHJhY2UgPC0gcmVsZXZlbChkZl9maWx0ZXJlZCRyYWNlLCAiV2hpdGUiKQ0KDQojbW9kZWwNCm1vZDEgPC0gbG0obm9faW50X2FjY2VzcyB+IFBPVkVSVFkgKyByYWNlICsgcHVtYV9mYWN0b3IsIHdlaWdodHMgPSBQRVJXVCwgZGF0YSA9IGRmX2ZpbHRlcmVkKQ0KDQojaGV0ZXJvc2tlZGFzdGljaXR5IHJvYnVzdCBzdGFuZGFyZCBlcnJvcnMNCm1vZDEkbmV3c2UgPC0gdmNvdkhDKG1vZDEsIHR5cGU9IkhDMyIpDQptb2QxLmRpc3BsYXkgPC0gY29lZnRlc3QobW9kMSwgbW9kMSRuZXdzZSkNCg0KI2NsZWFuaW5nIHVwIHRoZSBvdXRwdXQgYSBiaXQgZm9yIGRpc3BsYXkNCnRpZHlfb3V0cHV0IDwtIGJyb29tOjp0aWR5KG1vZDEuZGlzcGxheSkNCnRpZHlfb3V0cHV0WywyOjVdIDwtIHJvdW5kKHRpZHlfb3V0cHV0WywyOjVdLCAzKQ0KdGlkeV9vdXRwdXQgPC0ga25pdHI6OmthYmxlKHRpZHlfb3V0cHV0KQ0KdGlkeV9vdXRwdXQNCmBgYA0KDQoNCk92ZXJhbGwsIDglIG9mIGNoaWxkcmVuIDUtMTggaW4gS2VudHVja3kgZG9uJ3QgaGF2ZSBpbnRlcm5ldCBhY2Nlc3MgYXQgaG9tZS4gMTYlIG9mIGNoaWxkcmVuIGluIHBvdmVydHkgZG9uJ3QgaGF2ZSBpbnRlcmVudCBhY2Nlc3MsIGNvbXBhcmVkIHRvIDUlIG9mIGNoaWxkcmVuIG5vdCBpbiBwb3ZlcnR5LiBDaGlsZHJlbiBpbiBwb3ZlcnR5IGFyZSAzeCBtb3JlIGxpa2VseSBub3QgdG8gaGF2ZSBpbnRlcm5ldCBhY2Nlc3MgYXQgaG9tZS4gDQoNCldyaXRlIFBVTUEgZGF0YSB0byBjc3YNCmBgYHtyfQ0Kd3JpdGVfY3N2KGt5X3B1bWEsICJreV9wdW1hX2ludF9hY2Nlc3MuY3N2IikNCmBgYA0KDQoNClByZXBhcmUgc2hhcGVmaWxlIGFuZCBtZXJnZSBpbiBuZXcgZGF0YQ0KYGBge3J9DQpreV9zaHBAZGF0YSRQVU1BIDwtIGFzLm51bWVyaWMoYXMuY2hhcmFjdGVyKGt5X3NocEBkYXRhJFBVTUFDRTEwKSkNCmt5X3NocEBkYXRhIDwtIGZ1bGxfam9pbihreV9zaHBAZGF0YSwga3lfcHVtYSwgYnkgPSAiUFVNQSIpDQpreV9zaHBAZGF0YSRub19pbnRfYWNjZXNzIDwtIGt5X3NocEBkYXRhJG5vX2ludF9hY2Nlc3MgKiAxMDANCg0KYGBgDQoNCkNyZWF0ZSBhbmQgc2F2ZSBtYXANCmBgYHtyfQ0KcG5nKCJreV9pbnRfbWFwLnBuZyIsIGhlaWdodCA9IDI1MCwgd2lkdGggPSA1NTApDQp0bV9zaGFwZShreV9zaHApICsNCiAgdG1fcG9seWdvbnMoIm5vX2ludF9hY2Nlc3MiLCBzdHlsZT0icXVhbnRpbGUiLCB0aXRsZT0iQ2hpbGRyZW4gQWdlcyA1LTE4IFdpdGhvdXQgSG9tZSBJbnRlcm5ldCBBY2Nlc3MsIDIwMTYgXG4oUGVyY2VudCkiLCBwYWxldHRlID0gIkJsdWVzIikNCmRldi5vZmYoKQ0KYGBgDQo=</div>
 
 
 
