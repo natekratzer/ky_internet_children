@@ -1,0 +1,84 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Data is from IPUMS and was downloaded as .csv and saved in this repo
+
+Load libraries
+```{r}
+library(tidyverse)
+library(survey)
+library(tmap)
+library(rgdal)
+```
+
+Load data
+```{r}
+df <- read_csv("usa_00017.csv")
+```
+
+
+Read in shapefile
+```{r}
+ky_shp <- readOGR("cb_2016_21_puma10_500k", layer = "cb_2016_21_puma10_500k", GDAL1_integer64_policy = TRUE) 
+```
+
+
+Create list of Public Use Microdata Areas to keep in data
+```{r}
+PUMA_list <- as.numeric(as.character(ky_shp@data$PUMACE10))
+```
+
+
+Filter to children 5-18 in Kentucky
+```{r}
+df_filtered <- df %>% filter(AGE < 19 & AGE > 4 & PUMA %in% PUMA_list)
+```
+
+
+```{r}
+df_filtered <- df_filtered %>%
+  mutate(
+    poverty = ifelse(POVERTY < 100, 1, 0),
+    no_int_access = ifelse(CINETHH == 3, 1, 0)
+  )
+```
+
+
+write smaller dataset to feather format
+```{r}
+write_csv(df_filtered, "ky_children_only.csv")
+```
+
+Survey analysis
+```{r}
+svy_df <- svydesign(ids = ~1, weights = ~PERWT, data = df_filtered)
+ky_int <- svymean(~no_int_access, design = svy_df)
+ky_pov_int <- svyby(~no_int_access, ~poverty, design = svy_df, svymean)
+ky_puma <- svyby(~no_int_access, ~PUMA, design = svy_df, svymean)
+```
+
+Print statewide results
+```{r}
+ky_int
+ky_pov_int
+```
+
+Overall, 9% of children 5-18 in Kentucky don't have internet access at home. 18% of children in poverty don't have interent access, compared to 6% of children not in poverty. Children in poverty are 3x more likely not to have internet access at home. 
+
+```{r}
+ky_shp@data$PUMA <- as.numeric(as.character(ky_shp@data$PUMACE10))
+ky_shp@data <- full_join(ky_shp@data, ky_puma, by = "PUMA")
+```
+
+```{r}
+ky_shp@data$no_int_access <- ky_shp@data$no_int_access * 100
+```
+
+```{r}
+png("ky_int_map.png", height = 250, width = 550)
+tm_shape(ky_shp) +
+  tm_polygons("no_int_access", style="quantile", title="Children Ages 5-18 Without Home Internet Access \n(Percent)", palette = "Blues")
+dev.off()
+```
