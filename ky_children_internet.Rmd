@@ -46,7 +46,7 @@ df_filtered <- df_filtered %>%
 ```
 
 
-write smaller dataset to feather format
+write smaller dataset to .csv format
 ```{r}
 write_csv(df_filtered, "ky_children_only.csv")
 ```
@@ -67,15 +67,15 @@ ky_pov_int
 
 Overall, 9% of children 5-18 in Kentucky don't have internet access at home. 18% of children in poverty don't have interent access, compared to 6% of children not in poverty. Children in poverty are 3x more likely not to have internet access at home. 
 
+Prepare shapefile and merge in new data
 ```{r}
 ky_shp@data$PUMA <- as.numeric(as.character(ky_shp@data$PUMACE10))
 ky_shp@data <- full_join(ky_shp@data, ky_puma, by = "PUMA")
-```
-
-```{r}
 ky_shp@data$no_int_access <- ky_shp@data$no_int_access * 100
+
 ```
 
+Create and save map
 ```{r}
 png("ky_int_map.png", height = 250, width = 550)
 tm_shape(ky_shp) +
